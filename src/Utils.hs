@@ -5,6 +5,7 @@ import Data.Char (toLower)
 import qualified Data.Text as Text
 import qualified Data.Text.Encoding as E
 import qualified Data.Time as Time
+import qualified Data.Time.Clock.System as Sys
 
 showText :: (Show a) => a -> Text.Text
 showText = Text.pack . show
@@ -20,3 +21,14 @@ showDay = Time.formatTime Time.defaultTimeLocale "%F"
 
 readDay :: String -> Maybe Time.Day
 readDay = Time.parseTimeM True Time.defaultTimeLocale "%Y-%-m-%-d"
+
+safeHead :: [a] -> Maybe a
+safeHead (x:_) = Just x
+safeHead _ = Nothing
+
+
+secondsSinceEpoch :: IO Integer
+secondsSinceEpoch = fromIntegral . Sys.systemSeconds <$> Sys.getSystemTime
+
+debugTime :: IO Time.UTCTime
+debugTime = Sys.systemToUTCTime <$> Sys.getSystemTime

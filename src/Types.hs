@@ -220,9 +220,11 @@ data Result = Result {
     resultOk :: Bool
     , resultMessage :: T.Text
     , resultData :: Maybe APIResponse
+    , resultCod :: Int
     }
     deriving (Show, Eq, Generic)
     deriving (Ae.ToJSON, Ae.FromJSON, GP.PrettyShow) via PrefixCamel Result
 
 
 data LocationData = LCityID { unLCityID :: Int }
+    deriving (Show, Eq, Generic)

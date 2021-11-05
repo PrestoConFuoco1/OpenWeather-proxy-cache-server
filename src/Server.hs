@@ -28,8 +28,8 @@ executeWithErrorHandlers h mTime mCityID =
     let mLocationData = getLocationData mCityID
         logger = H.log h
      in U.withMaybe mLocationData (pure usage) $ \locationData ->
-        Ex.withExceptionHandlers (Ex.errorHandlers logger) $
-            ok <$> execute h mTime locationData
+            Ex.withExceptionHandlers (Ex.errorHandlers logger) $
+                ok <$> execute h mTime locationData
 
 
 execute :: (CMC.MonadCatch m) => H.ServerHandler m -> Maybe Integer -> LocationData -> m APIResponse

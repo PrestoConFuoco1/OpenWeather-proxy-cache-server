@@ -12,6 +12,7 @@ weatherByLocationData
 , SC.ResponseF(..)
 ) where
 
+import qualified GenericPretty as GP
 import Data.Proxy
 import qualified Data.Text as T
 import qualified GenericPretty as GP
@@ -28,6 +29,8 @@ import Utils as U
 import qualified Control.Monad.Catch as CMC
 
 import qualified Data.Aeson as Ae
+import Data.Aeson ((.:))
+import Text.Read (readMaybe)
 import DerivingJSON
 import GHC.Generics
 
@@ -81,6 +84,16 @@ data OpenWeatherAPIError = OpenWeatherAPIError {
     , owapierrorMessage :: T.Text
     }
     deriving (Show, Eq, Generic)
-    deriving (Ae.ToJSON, Ae.FromJSON) via PrefixCamel OpenWeatherAPIError
+    deriving GP.PrettyShow via PrefixCamel OpenWeatherAPIError
+    --deriving (Ae.ToJSON, Ae.FromJSON) via PrefixCamel OpenWeatherAPIError
 
-
+instance Ae.FromJSON OpenWeatherAPIError where
+    parseJSON = Ae.withObject "open weather API error object" $ \o -> do
+        msg <- o .: "message"
+        codStr <- o .: "cod"
+        let mCod = readMaybe (codStr :: String)
+        cod <- maybe (fail "cod is not a number") pure mCod
+        pure $ OpenWeatherAPIError {
+            owapierrorCod = cod
+            , owapierrorMessage = msg
+            }

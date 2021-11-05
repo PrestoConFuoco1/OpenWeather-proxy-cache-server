@@ -9,6 +9,7 @@ import qualified App.Logger as L
 import qualified Data.Text as T
 import Server.Result
 import qualified Utils as U
+import qualified GenericPretty as GP
 
 data ServerException =
     NoDataFound
@@ -33,15 +34,15 @@ throwNoDataFound = CMC.throwM NoDataFound
 errorHandlers :: (CMC.MonadCatch m) => L.LoggerHandler m -> [CMC.Handler m Result]
 errorHandlers logger =
     [ CMC.Handler serverErrorHandler
-    --, CMC.Handler $ defaultHandler logger
+    , CMC.Handler $ openWeatherErrorHandler logger
     ]
 
 defaultHandler :: (CMC.MonadCatch m) => L.LoggerHandler m -> CMC.SomeException -> m Result
 defaultHandler logger e = do
     L.logError logger "unexpected error occured"
     L.logError logger $ T.pack $ CMC.displayException e
-    undefined
-    
+    pure internalError
+
 
 serverErrorHandler :: (CMC.MonadCatch m) => ServerException -> m Result
 serverErrorHandler NoDataFound = pure noDataFound
@@ -66,11 +67,17 @@ openWeatherErrorHandler logger err@(OW.FailureResponse _ (OW.Response _ _ _ resp
     let
         maybeParsedBody = Ae.decode respBody >>= AeT.parseMaybe Ae.parseJSON :: Maybe OW.OpenWeatherAPIError
     U.withMaybe maybeParsedBody
-        (failedToParseResponseError logger err)
-        (pure . toAPIError)
+        (failedToParseResponseError logger err) $ \owErr -> do
+        L.logError logger "got an error from openweather API"
+        L.logError logger $ GP.textPretty owErr
+        pure $ toAPIError owErr
+openWeatherErrorHandler logger err = do
+    L.logError logger "unexpected openweather API error"
+    L.logError logger $ T.pack $ CMC.displayException err
+    pure $ internalError
 
 toAPIError :: OW.OpenWeatherAPIError -> Result
-toAPIError = undefined
+toAPIError err = failure (OW.owapierrorCod err) (OW.owapierrorMessage err)
 
 failedToParseResponseError :: (Monad m) => L.LoggerHandler m -> OW.ClientError -> m Result
 failedToParseResponseError logger err = do

@@ -25,6 +25,8 @@ source-repository head
 
 library
   exposed-modules:
+      App.FillerHandler
+      App.FillerHandler.Instance
       App.Logger
       App.ServerHandler
       App.ServerHandler.Instance
@@ -32,12 +34,14 @@ library
       Database
       DerivingJSON
       Exceptions
+      Filler
       GenericPretty
       Lib
       OpenWeather
       Private
       Server
       Server.Result
+      StartCacheFiller
       StartServer
       Types
       Utils

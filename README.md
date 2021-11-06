@@ -18,7 +18,7 @@ The instruction here supposes that database works on the same machine with web-s
 if it is not true, a little changes should be made: see postgreSQL documentaion.
 We will refer to the database name as databaseName. Also you will need the user
 for the application to work with the database.
-We will refer to them as to databaseOwner, databaseApp.
+We will refer to it as to databaseOwner.
 So, next commands are to be run using postgreSQL superuser:
 
 ```sql
@@ -31,7 +31,7 @@ See configuration file format below. In this section we will use file config.dha
 
 After users are created, you need to create the entire database. It is rather easy since
 the web-server supports migrations and has a separate command-line argument to apply all the
-migrations to the given database. To run migrations, use `stack exec weather-exe -- config.conf -m`.
+migrations to the given database. To run migrations, use `stack exec weather-exe -- ./config.conf -m`.
 
 In the end, you should let PostgreSQL know, who can connect to the database and what authentication method
 should be used. If the database is on the same machine with the server, the next line is to be added to
@@ -43,7 +43,7 @@ should be used. If the database is on the same machine with the server, the next
 The example of the configuration file is inside the `src` directory.
 
 ```
-{ dhallDatabaseName = "weather_migrations"
+{ dhallDatabaseName = "weather_db"
 , dhallDatabaseUser = "weather_owner"
 , dhallDatabasePassword = "0000"
 

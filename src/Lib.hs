@@ -15,6 +15,7 @@ import RunOptions
 import qualified Data.Text.Encoding as E
 import qualified System.Exit as Q
 import Control.Monad (when)
+import qualified Migrations as M
 
 rzhev :: Int
 rzhev = 499717
@@ -92,6 +93,14 @@ toServerConfig apiKey conf con logger = ServerConfig {
     , sconfLogger = logger
     }
 
+toMigrationsConfig :: C.Config -> M.Config
+toMigrationsConfig conf = M.Config {
+    M.databaseName = C.databaseName conf
+    , M.adminName = C.databaseUser conf
+    , M.adminPassword = C.databasePassword conf
+    }
+
+
 someFunc :: IO ()
 someFunc = do
     let loadingLogger = L.stdHandler
@@ -111,6 +120,13 @@ someFunc = do
 
     when (testConfig runOpts) Q.exitSuccess
 
+    if migrations runOpts
+        then M.migrationMain $ toMigrationsConfig config
+        else run runOpts apiKey config
+
+
+run :: RunOptions -> T.Text -> C.Config -> IO ()
+run runOpts apiKey config = do
     let conStr = E.encodeUtf8 $ connectString config
 
     conFillers <- PS.connectPostgreSQL conStr

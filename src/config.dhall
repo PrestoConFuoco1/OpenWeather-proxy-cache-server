@@ -1,4 +1,5 @@
-{ dhallDatabaseName = "weatherdb"
+-- { dhallDatabaseName = "weatherdb"
+{ dhallDatabaseName = "weather_migrations"
 , dhallDatabaseUser = "weather_owner"
 , dhallDatabasePassword = "0000"
 

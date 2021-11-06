@@ -38,6 +38,7 @@ library
       Filler
       GenericPretty
       Lib
+      Migrations
       OpenWeather
       Private
       RunOptions
@@ -59,9 +60,11 @@ library
     , bytestring
     , dhall
     , exceptions
+    , file-embed
     , http-client
     , optparse-applicative
     , postgresql-simple
+    , postgresql-simple-migration
     , servant
     , servant-client
     , servant-server
@@ -85,9 +88,11 @@ executable weather-exe
     , bytestring
     , dhall
     , exceptions
+    , file-embed
     , http-client
     , optparse-applicative
     , postgresql-simple
+    , postgresql-simple-migration
     , servant
     , servant-client
     , servant-server
@@ -113,9 +118,11 @@ test-suite weather-test
     , bytestring
     , dhall
     , exceptions
+    , file-embed
     , http-client
     , optparse-applicative
     , postgresql-simple
+    , postgresql-simple-migration
     , servant
     , servant-client
     , servant-server

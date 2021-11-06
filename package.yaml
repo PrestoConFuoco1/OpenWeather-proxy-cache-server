@@ -34,9 +34,11 @@ dependencies:
 - bytestring
 - exceptions
 - postgresql-simple
+- postgresql-simple-migration
 - warp
 - dhall
 - optparse-applicative
+- file-embed
 
 library:
   source-dirs: src

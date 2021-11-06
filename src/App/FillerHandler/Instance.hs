@@ -11,8 +11,6 @@ import qualified Data.Text as T
 import GHC.Generics
 import Control.Concurrent.MVar
 import Control.Concurrent (threadDelay)
-import qualified Database as D
-import qualified OpenWeather as OW
 
 data Config = Config {
     configApiKey :: T.Text
@@ -23,7 +21,7 @@ data Config = Config {
 
 data Resources = Resources {
     postgresConnection :: PS.Connection
-    , databaseLock :: MVar ()
+    , fillersLock :: MVar ()
     }
 
 
@@ -35,7 +33,7 @@ resourcesToHandle conf resources logger env =
         , FH.timeSinceEpoch = U.secondsSinceEpoch
         , FH.requestCurrentWeather = OW.weatherByLocationData (configApiKey conf)
         , FH.writeToCache = D.writeToCache (postgresConnection resources)
-        , FH.acquireDBLock = takeMVar (databaseLock resources)
-        , FH.giveAwayDBLock = putMVar (databaseLock resources) ()
+        , FH.acquireLock = takeMVar (fillersLock resources)
+        , FH.giveAwayLock = putMVar (fillersLock resources) ()
         , FH.sleep = threadDelay (sleepTimeSeconds conf * 1000000)
         }

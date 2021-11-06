@@ -4,6 +4,7 @@
 {-# LANGUAGE DerivingStrategies #-}
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingVia #-}
+{-# LANGUAGE RecordWildCards #-}
 
 module OpenWeather (
 weatherByLocationData
@@ -15,17 +16,13 @@ weatherByLocationData
 import qualified GenericPretty as GP
 import Data.Proxy
 import qualified Data.Text as T
-import qualified GenericPretty as GP
 import Network.HTTP.Client (defaultManagerSettings, newManager)
 import Servant.API
 import qualified Servant.Client as SC
-import Servant.Types.SourceT (foreach)
 import Types
 
 import qualified Servant.Client.Streaming as S
 
-import qualified App.Logger as L
-import Utils as U
 import qualified Control.Monad.Catch as CMC
 
 import qualified Data.Aeson as Ae
@@ -37,24 +34,29 @@ import GHC.Generics
 
 type OpenWeatherAPI
    = QueryParam "appid" T.Text :> QueryParam "id" Int :> Get '[ JSON] APIResponse
+    :<|> QueryParam "appid" T.Text :> QueryParam "q" T.Text :> Get '[ JSON] APIResponse
+    :<|> QueryParam "appid" T.Text :> QueryParam "lat" Double :> QueryParam "lon" Double :> Get '[ JSON] APIResponse
 
 api :: Proxy OpenWeatherAPI
 api = Proxy
 
-weatherByLocationIdClient = SC.client api
-
+baseScheme :: S.Scheme
 baseScheme = SC.Http
 
+baseUrlHost :: String
 baseUrlHost = "api.openweathermap.org"
 
+baseUrlPort :: Int
 baseUrlPort = 80
 
+baseUrlPath :: String
 baseUrlPath = "data/2.5/weather"
 
 openWeatherBaseUrl = S.BaseUrl baseScheme baseUrlHost baseUrlPort baseUrlPath
 
---weatherByLocationIdClientM
-weatherByLocationIdClientM = SC.client api
+weatherByLocationIdClientM
+    :<|> weatherByCityNameClientM
+    :<|> weatherByCoordinatesClientM = SC.client api
 
 
 toIOThrow :: SC.ClientM a -> IO a
@@ -67,16 +69,20 @@ toIOEither action = do
   manager <- newManager defaultManagerSettings
   SC.runClientM action $ SC.mkClientEnv manager openWeatherBaseUrl
 
-weatherByLocationIdIOThrow ::
-     Maybe T.Text -> Maybe Int -> IO APIResponse
-weatherByLocationIdIOThrow key locationId = toIOThrow $ weatherByLocationIdClientM key locationId
-
 weatherByLocationId :: T.Text -> Int -> IO APIResponse
 weatherByLocationId key cityID = toIOThrow $ weatherByLocationIdClientM (Just key) (Just cityID)
+
+weatherByCityName :: T.Text -> T.Text -> IO APIResponse
+weatherByCityName key cityName = toIOThrow $ weatherByCityNameClientM (Just key) (Just cityName)
+
+weatherByCoordinates :: T.Text -> Double -> Double -> IO APIResponse
+weatherByCoordinates key lat lon = toIOThrow $ weatherByCoordinatesClientM (Just key) (Just lat) (Just lon)
 
 weatherByLocationData :: T.Text -> LocationData -> IO APIResponse
 weatherByLocationData key locationData = case locationData of
     LCityID cityID -> weatherByLocationId key cityID
+    LCityName cityName -> weatherByCityName key cityName
+    LCoords {..} -> weatherByCoordinates key ldLat ldLon
 
 
 data OpenWeatherAPIError = OpenWeatherAPIError {
@@ -85,7 +91,6 @@ data OpenWeatherAPIError = OpenWeatherAPIError {
     }
     deriving (Show, Eq, Generic)
     deriving GP.PrettyShow via PrefixCamel OpenWeatherAPIError
-    --deriving (Ae.ToJSON, Ae.FromJSON) via PrefixCamel OpenWeatherAPIError
 
 instance Ae.FromJSON OpenWeatherAPIError where
     parseJSON = Ae.withObject "open weather API error object" $ \o -> do

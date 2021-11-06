@@ -5,7 +5,6 @@ import qualified App.FillerHandler as FH
 import qualified Utils as U
 import qualified App.Logger as L
 import qualified GenericPretty as GP
-import Types
 import qualified Control.Monad.Catch as CMC
 import Control.Monad (forever)
 import qualified Data.Text as T
@@ -29,8 +28,9 @@ fillerLoop h = do
     let logger = FH.log h
         env = FH.handlerEnv h
         locationData = FH.envLocationData env
-        num = FH.envFillerNumero env
-    FH.acquireDBLock h
+    FH.acquireLock h
+    L.logDebug logger $ withNum h $ "acquired lock"
+
     L.logDebug logger $ withNum h $ "trying to get data from OpenWeather API"
     L.logDebug logger $ withNum h $ "city ID = " <> (U.showText locationData)
     currentWeather <- FH.requestCurrentWeather h locationData
@@ -38,11 +38,10 @@ fillerLoop h = do
     L.logDebug logger $ GP.textPretty currentWeather
     currentTime <- FH.timeSinceEpoch h
     L.logDebug logger $ withNum h $ "writing obtained data into cache for time = " <> U.showText currentTime
-    L.logDebug logger $ withNum h $ "trying to acquire lock"
-    L.logDebug logger $ withNum h $ "acquired lock"
     FH.writeToCache h currentWeather
-    L.logDebug logger $ withNum h $ "lock free; ok"
-    FH.giveAwayDBLock h
+
+    L.logDebug logger $ withNum h $ "ok; freeing lock..."
+    FH.giveAwayLock h
 
 withNum :: FH.FillerHandler m -> T.Text -> T.Text
 withNum h text =

@@ -30,7 +30,6 @@ library
       App.Logger
       App.ServerHandler
       App.ServerHandler.Instance
-      Client
       Config
       Database
       DerivingJSON

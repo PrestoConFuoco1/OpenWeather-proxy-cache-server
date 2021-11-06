@@ -1,9 +1,6 @@
 module Utils where
 
-import qualified Data.ByteString as B
-import Data.Char (toLower)
 import qualified Data.Text as Text
-import qualified Data.Text.Encoding as E
 import qualified Data.Time as Time
 import qualified Data.Time.Clock.System as Sys
 

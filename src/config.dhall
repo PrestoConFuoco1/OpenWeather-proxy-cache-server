@@ -13,6 +13,8 @@
 , dhallFillerSleepTimeSeconds = 600 
 
 , dhallServerTimeEpsSeconds = 1000
+, dhallServerLatEps = 0.2
+, dhallServerLonEps = 0.1
 , dhallServerPort = 8081
 }
 

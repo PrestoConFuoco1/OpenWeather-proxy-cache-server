@@ -10,8 +10,10 @@ import Data.Char (isLower)
 import GHC.Generics
 import qualified GenericPretty as GP
 
+prefixCamel :: String -> String
 prefixCamel = Ae.camelTo2 '_' . dropWhile isLower
 
+prefixCamelOptions :: Ae.Options
 prefixCamelOptions = Ae.defaultOptions {Ae.fieldLabelModifier = prefixCamel}
 
 newtype PrefixCamel a =

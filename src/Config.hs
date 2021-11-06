@@ -9,6 +9,7 @@ import qualified Data.Text as T
 import Dhall
 import qualified GenericPretty as GP
 import DerivingJSON
+import Types
 
 data ConfigDhall = ConfigDhall {
     dhallDatabaseName :: T.Text
@@ -19,6 +20,8 @@ data ConfigDhall = ConfigDhall {
     , dhallFillerSleepTimeSeconds :: Natural
 
     , dhallServerTimeEpsSeconds :: Natural
+    , dhallServerLatEps :: Double
+    , dhallServerLonEps :: Double
     , dhallServerPort :: Natural
     } deriving (Show, Eq, Generic)
 instance FromDhall ConfigDhall
@@ -32,7 +35,7 @@ data Config = Config {
     , fillerCities :: [Int]
     , fillerSleepTimeSeconds :: Int
 
-    , serverTimeEpsSeconds :: Integer
+    , serverDelta :: Delta
     , serverPort :: Int
     } deriving (Show, Eq, Generic)
     deriving GP.PrettyShow via PrefixCamel Config
@@ -46,7 +49,11 @@ fixConfig confDhall = Config {
     , fillerCities = Prelude.map fromIntegral $ dhallFillerCities confDhall
     , fillerSleepTimeSeconds = fromIntegral $ dhallFillerSleepTimeSeconds confDhall
 
-    , serverTimeEpsSeconds = fromIntegral $ dhallServerTimeEpsSeconds confDhall
+    , serverDelta = Delta {
+        deltaTime = fromIntegral $ dhallServerTimeEpsSeconds confDhall
+        , deltaLat = dhallServerLatEps confDhall
+        , deltaLon = dhallServerLonEps confDhall
+        }
     , serverPort = fromIntegral $ dhallServerPort confDhall
     }
 

@@ -6,26 +6,28 @@ module Server where
 import qualified Control.Monad.Catch as CMC
 import qualified Data.Text as T
 import Types
-import GHC.Generics
 import Prelude hiding (log)
 import qualified Utils as U
 import qualified GenericPretty as GP
-import DerivingJSON
-import qualified Data.Aeson as Ae
 import Data.Maybe (listToMaybe)
 import qualified App.ServerHandler as H
 import qualified App.Logger as L
 import qualified Exceptions as Ex
 import Server.Result
-import qualified Utils as U
 
-getLocationData :: Maybe Int -> Maybe LocationData
-getLocationData (Just cityID) = Just $ LCityID cityID
+getLocationData :: Maybe Int -> Maybe T.Text -> Maybe Double -> Maybe Double -> Maybe LocationData
+getLocationData (Just cityID) _ _ _ = Just $ LCityID cityID
+getLocationData _ (Just cityName) _ _ = Just $ LCityName cityName
+getLocationData _ _ (Just lat) (Just lon) = Just $ LCoords {
+    ldLat = lat
+    , ldLon = lon
+    }
+getLocationData _ _ _ _ = Nothing
 
 executeWithErrorHandlers :: (CMC.MonadCatch m) =>
-    H.ServerHandler m -> Maybe Integer -> Maybe Int -> m Result
-executeWithErrorHandlers h mTime mCityID =
-    let mLocationData = getLocationData mCityID
+    H.ServerHandler m -> Maybe Integer -> Maybe Int -> Maybe T.Text -> Maybe Double -> Maybe Double -> m Result
+executeWithErrorHandlers h mTime mCityID mCityName mLat mLon =
+    let mLocationData = getLocationData mCityID mCityName mLat mLon
         logger = H.log h
      in U.withMaybe mLocationData (pure usage) $ \locationData ->
             Ex.withExceptionHandlers (Ex.errorHandlers logger) $
@@ -36,10 +38,11 @@ execute :: (CMC.MonadCatch m) => H.ServerHandler m -> Maybe Integer -> LocationD
 execute h mTime cityID = do
     let logger = H.log h
         env = H.handleEnv h
-        timeEps_ = H.getTimeEps env
+        --timeEps_ = H.getTimeEps env
+        delta = H.getDelta env
     time <- maybe (H.timeSinceEpoch h) pure mTime
     L.logDebug logger "trying to obtain requested data from cache"
-    data_ <- H.searchCache h timeEps_ time cityID
+    data_ <- H.searchCache h delta time cityID
     U.withMaybe (listToMaybe data_) (noDataInCache h time cityID) $ \fromCache -> do
         L.logDebug logger $ "ok, found info in the cache: "
         L.logDebug logger $ GP.textPretty fromCache
@@ -57,10 +60,11 @@ noDataInCache :: (CMC.MonadCatch m) => H.ServerHandler m -> Integer -> LocationD
 noDataInCache h time cityID = do
     let logger = H.log h
         env = H.handleEnv h
-        timeEps' = H.getTimeEps env
+        delta = H.getDelta env
+        timeEps_ = deltaTime delta
     L.logDebug logger "no data in cache found, data will be obtained from API the given time is current one"
     now <- H.timeSinceEpoch h
-    let equals = equalsWithDelta timeEps'
+    let equals = equalsWithDelta timeEps_
     if time `equals` now
         then do
             L.logDebug logger "asking openweather api for the current weather"

@@ -1,11 +1,9 @@
 module Server.Result where
 
 import Types
-import qualified App.ServerHandler as SH
 import qualified Data.Text as T
-import qualified Control.Monad.Catch as CMC
-import qualified Utils as U
 
+codeOk, codeBad, codeInternal :: Int
 codeOk = 200
 codeBad = 400
 codeInternal = 500
@@ -30,6 +28,7 @@ failure code msg = Result {
 usage :: Result
 usage = failure codeBad usageMessage
 
+usageMessage :: T.Text
 usageMessage = "time (integer, optional) - seconds since epoch; \
                 \id - city_id (integer); id is required "
 

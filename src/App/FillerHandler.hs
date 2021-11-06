@@ -16,7 +16,7 @@ data FillerHandler m = FillerHandler {
     , timeSinceEpoch :: m Integer
     , requestCurrentWeather :: LocationData -> m APIResponse
     , writeToCache :: APIResponse -> m ()
-    , acquireDBLock :: m ()
-    , giveAwayDBLock :: m ()
+    , acquireLock :: m ()
+    , giveAwayLock :: m ()
     , sleep :: m ()
     }

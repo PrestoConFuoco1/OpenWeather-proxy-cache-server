@@ -6,8 +6,7 @@ import Types
 import qualified App.Logger as L
 import Filler (fillerFlow)
 import qualified App.FillerHandler as FH
-import Control.Concurrent (forkIO, threadDelay)
-import Control.Monad (forever)
+import Control.Concurrent (forkIO)
 import qualified Database.PostgreSQL.Simple as PS
 import qualified Data.Text as T
 

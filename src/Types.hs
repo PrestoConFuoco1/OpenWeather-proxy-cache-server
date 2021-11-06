@@ -9,11 +9,9 @@
 module Types where
 
 import qualified Data.Aeson as Ae
-import Data.Maybe (fromMaybe, maybeToList)
+import Data.Maybe (maybeToList)
 import qualified Data.Text as T
 import Database.PostgreSQL.Simple ((:.)(..), Only(..))
-import qualified Database.PostgreSQL.Simple as PS
-import qualified Database.PostgreSQL.Simple.FromField as PSF (FromField(..))
 import qualified Database.PostgreSQL.Simple.FromRow as PSF (FromRow(..), field)
 import qualified Database.PostgreSQL.Simple.ToRow as PST (ToRow(..))
 import DerivingJSON
@@ -54,6 +52,7 @@ data Weather =
   deriving anyclass (PST.ToRow, PSF.FromRow)
   deriving (Ae.ToJSON, Ae.FromJSON, GP.PrettyShow) via PrefixCamel Weather
 
+nothingWeather :: Weather
 nothingWeather = Weather Nothing Nothing Nothing Nothing
 
 instance HasNothing Weather where
@@ -73,6 +72,7 @@ data Main =
   deriving anyclass (PST.ToRow, PSF.FromRow)
   deriving (Ae.ToJSON, Ae.FromJSON, GP.PrettyShow) via PrefixCamel Main
 
+nothingMain :: Main
 nothingMain = Main Nothing Nothing Nothing Nothing Nothing Nothing
 
 instance HasNothing Main where
@@ -89,6 +89,7 @@ data Wind =
   deriving anyclass (PST.ToRow, PSF.FromRow)
   deriving (Ae.ToJSON, Ae.FromJSON, GP.PrettyShow) via PrefixCamel Wind
 
+nothingWind :: Wind
 nothingWind = Wind Nothing Nothing Nothing
 
 instance HasNothing Wind where
@@ -103,6 +104,7 @@ newtype Clouds =
   deriving anyclass (PST.ToRow, PSF.FromRow)
   deriving (Ae.ToJSON, Ae.FromJSON, GP.PrettyShow) via PrefixCamel Clouds
 
+nothingClouds :: Clouds
 nothingClouds = Clouds Nothing
 
 instance HasNothing Clouds where
@@ -118,6 +120,7 @@ data Rain =
   deriving anyclass (PST.ToRow, PSF.FromRow)
   deriving (Ae.ToJSON, Ae.FromJSON, GP.PrettyShow) via PrefixCamel Rain
 
+nothingRain :: Rain
 nothingRain = Rain Nothing Nothing
 
 instance HasNothing Rain where
@@ -133,6 +136,7 @@ data Snow =
   deriving anyclass (PST.ToRow, PSF.FromRow)
   deriving (Ae.ToJSON, Ae.FromJSON, GP.PrettyShow) via PrefixCamel Snow
 
+nothingSnow :: Snow
 nothingSnow = Snow Nothing Nothing
 
 instance HasNothing Snow where
@@ -152,6 +156,7 @@ data Sys =
   deriving anyclass (PST.ToRow, PSF.FromRow)
   deriving (Ae.ToJSON, Ae.FromJSON, GP.PrettyShow) via PrefixCamel Sys
 
+nothingSys :: Sys
 nothingSys = Sys Nothing Nothing Nothing Nothing Nothing Nothing
 
 instance HasNothing Sys where
@@ -184,7 +189,6 @@ data APIResponse =
 instance PST.ToRow APIResponse where
   toRow = apiResponseToRow
 
---apiResponseToRow 
 apiResponseToRow APIResponse {..} =
   PST.toRow $
   apiCoord :. Only apiDt :. Only apiBase :. Only apiTimezone :. Only apiId :.
@@ -226,5 +230,19 @@ data Result = Result {
     deriving (Ae.ToJSON, Ae.FromJSON, GP.PrettyShow) via PrefixCamel Result
 
 
-data LocationData = LCityID { unLCityID :: Int }
+data LocationData =
+    LCityID { unLCityID :: Int }
+    | LCityName { unLCityName :: T.Text }
+    | LCoords {
+        ldLat :: Double
+        , ldLon :: Double
+        }
     deriving (Show, Eq, Generic)
+
+data Delta = Delta {
+    deltaTime :: Integer
+    , deltaLat :: Double
+    , deltaLon :: Double
+    } deriving (Show, Eq, Generic)
+    deriving GP.PrettyShow via PrefixCamel Delta
+

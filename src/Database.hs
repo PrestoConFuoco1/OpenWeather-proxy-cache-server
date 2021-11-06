@@ -23,16 +23,7 @@ instance PrettyShow SqlValue where
     prettyShow (SqlValue x) = prettyShow $ Showable x
 
 -------------------------
-connectString =
-  "dbname=" <>
-  databaseName <> " user=" <> userName <> " password='" <> password <> "'"
-  where
-    databaseName = "weatherdb"
-    userName = "weather_owner"
-    password = "0000"
 
-connectMyDB :: IO PS.Connection
-connectMyDB = PS.connectPostgreSQL connectString
 
 insertQuery :: PS.Query
 insertQuery =

@@ -6,7 +6,6 @@ module StartServer where
 
 
 import Data.IORef
-import Private (apiKey)
 import qualified App.Logger as L
 import qualified App.ServerHandler as SH
 import qualified App.ServerHandler.Instance as SHI
@@ -25,17 +24,6 @@ import qualified Exceptions as Ex
 import qualified Control.Monad.Catch as CMC
 import qualified System.Exit as Q
 import Server.Result
-
-connectString =
-  "dbname=" <>
-  databaseName <> " user=" <> userName <> " password='" <> password <> "'"
-  where
-    databaseName = "weatherdb"
-    userName = "weather_owner"
-    password = "0000"
-
-connectMyDB :: IO PS.Connection
-connectMyDB = PS.connectPostgreSQL connectString
 
 type CacheAPI
    = "weather" :> S.QueryParam "time" Integer :> S.QueryParam "id" Int :> S.Get '[ S.JSON] Result

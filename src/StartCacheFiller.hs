@@ -1,7 +1,6 @@
 module StartCacheFiller (startCacheFiller, FillerConfig(..)) where
 
 import qualified App.FillerHandler.Instance as AFI
-import Database (connectMyDB)
 import Control.Concurrent.MVar (newMVar)
 import Types
 import qualified App.Logger as L

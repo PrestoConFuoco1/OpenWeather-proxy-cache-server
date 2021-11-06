@@ -31,6 +31,7 @@ library
       App.ServerHandler
       App.ServerHandler.Instance
       Client
+      Config
       Database
       DerivingJSON
       Exceptions
@@ -39,6 +40,7 @@ library
       Lib
       OpenWeather
       Private
+      RunOptions
       Server
       Server.Result
       StartCacheFiller
@@ -55,8 +57,10 @@ library
       aeson
     , base >=4.7 && <5
     , bytestring
+    , dhall
     , exceptions
     , http-client
+    , optparse-applicative
     , postgresql-simple
     , servant
     , servant-client
@@ -79,8 +83,10 @@ executable weather-exe
       aeson
     , base >=4.7 && <5
     , bytestring
+    , dhall
     , exceptions
     , http-client
+    , optparse-applicative
     , postgresql-simple
     , servant
     , servant-client
@@ -105,8 +111,10 @@ test-suite weather-test
       aeson
     , base >=4.7 && <5
     , bytestring
+    , dhall
     , exceptions
     , http-client
+    , optparse-applicative
     , postgresql-simple
     , servant
     , servant-client

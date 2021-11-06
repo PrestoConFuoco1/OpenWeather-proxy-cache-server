@@ -1,7 +1,6 @@
 module Filler where
 
 
-import Private (apiKey)
 import qualified App.FillerHandler as FH
 import qualified Utils as U
 import qualified App.Logger as L

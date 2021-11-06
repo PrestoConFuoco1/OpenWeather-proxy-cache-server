@@ -35,6 +35,8 @@ dependencies:
 - exceptions
 - postgresql-simple
 - warp
+- dhall
+- optparse-applicative
 
 library:
   source-dirs: src

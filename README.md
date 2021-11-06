@@ -82,4 +82,27 @@ given priority or higher. For example, to log Warning, Error and Fatal messages 
 + `--logpathfillers <path>` is used to define the path to the log file of fillers;
 + `--logpathserver <path>` is used to define the path to the log file of server.
 
+# API
 
+The server supports one method, `/weather`. You can define the location
+by its id (see OpenWeather API website), city name or geographic coordinates 
+(latitude and longitude).
+The time is defined as number of seconds since Epoch (UTC +0).
+Parameters:
+
++ `dt` (Integer, optional) - time since Epoch, seconds, UTC +0;
++ `city_id` (Integer) - city OpenWeather identifier;
++ `city_name` (Integer) - city name;
++ `lat` (Double) - location latitude;
++ `lon` (Double) - location longitude.
+
+If incorrect combination of parameters is used, usage will be returned
+inside `message` field.
+
+
+The returned record has following fields:
+
++ `ok` (Bool) - indicates if no error occured;
++ `cod` (Integer) - shows the response code;
++ `message` (String) - describes the result, either error or not;
++ `data` - the same record that OpenWeather API returns, if no error occured.

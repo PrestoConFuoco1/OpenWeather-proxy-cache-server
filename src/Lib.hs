@@ -84,7 +84,7 @@ someFunc = do
 
 withPostgresConnection :: IO PS.Connection -> (PS.Connection -> IO ()) -> IO ()
 withPostgresConnection getCon action =
-    CMC.bracket getCon action PS.close
+    CMC.bracket getCon PS.close action 
 
 run :: RunOptions -> T.Text -> C.Config -> IO ()
 run runOpts apiKey config = do

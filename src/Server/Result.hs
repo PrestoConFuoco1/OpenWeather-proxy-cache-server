@@ -33,8 +33,14 @@ usage = failure codeBad usageMessage
 
 usageMessage :: T.Text
 usageMessage =
-    "time (integer, optional) - seconds since epoch; \
-                \id - city_id (integer); id is required "
+    "time (integer, optional) - seconds since epoch;\n \
+    \ city_id (integer) - city OpenWeather API identifier (integer);\n \
+    \ city_name (string) - city name :)\n \
+    \ latitude (double), longitude (double)\n \
+    \ correct combinations of location parameters:\n \
+    \ 1) city_id\n \
+    \ 2) city_name\n \
+    \ 3) latitude, longitude "
 
 noDataFound :: Result
 noDataFound = failure codeOk "no data found"

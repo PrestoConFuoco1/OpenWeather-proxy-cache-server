@@ -10,6 +10,8 @@ import qualified Data.ByteString as BS
 import Data.FileEmbed (embedDir)
 import Data.Function (on)
 import qualified Data.List as L (sortBy)
+import qualified Data.Text as T
+import qualified Data.Text.Encoding as E
 import qualified Database.PostgreSQL.Simple as PS
 import Database.PostgreSQL.Simple.Migration
     ( MigrationCommand(..)
@@ -18,8 +20,6 @@ import Database.PostgreSQL.Simple.Migration
     , runMigration
     )
 import qualified System.Exit as Q
-import qualified Data.Text as T
-import qualified Data.Text.Encoding as E
 
 data Config =
     Config
@@ -30,7 +30,8 @@ data Config =
   deriving (Show)
 
 adminConnectionString :: Config -> BS.ByteString
-adminConnectionString Config {..} = E.encodeUtf8 $
+adminConnectionString Config {..} =
+    E.encodeUtf8 $
     "dbname=" <>
     databaseName <>
     " user=" <> adminName <> " password='" <> adminPassword <> "'"

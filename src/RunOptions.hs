@@ -52,12 +52,10 @@ ghciRunOpts =
 
 getOpts :: Parser RunOptions
 getOpts =
-    RunOptions
-    <$> (argument str (metavar "CONFIGPATH"))
---        <> help "Path to the dhall configuration file")
-    <*> (argument str (metavar "API_KEY_ENV") <|> pure "OPEN_WEATHER_API_KEY")
---        <> help "Environment variable containing OpenWeather API key"
-    <*> switch
+    RunOptions <$> argument str (metavar "CONFIGPATH") <*>
+    (argument str (metavar "API_KEY_ENV") <|>
+     pure "OPEN_WEATHER_API_KEY") <*>
+    switch
         (short 'm' <>
          long "migrations" <> help "Whether to run migrations") <*>
     ((getLoggerSettings <$>
@@ -66,14 +64,18 @@ getOpts =
           (short 'l' <> metavar "LOGLEVEL" <> help "Log level")) <|>
      pure LogAll) <*>
     (strOption
-         (long "logpathfillers" <> metavar "FILLERSLOGFILE" <> help "Log path for cache fillers") <|>
+         (long "logpathfillers" <>
+          metavar "FILLERSLOGFILE" <>
+          help "Log path for cache fillers") <|>
      pure "./log_fillers") <*>
     (strOption
-         (long "logpathserver" <> metavar "SERVERLOGFILE" <> help "Log path for the server") <|>
+         (long "logpathserver" <>
+          metavar "SERVERLOGFILE" <> help "Log path for the server") <|>
      pure "./log_server") <*>
-
     switch (long "test-config" <> help "Test configuration")
 
+--        <> help "Path to the dhall configuration file")
+--        <> help "Environment variable containing OpenWeather API key"
 serverHeader :: String
 serverHeader = "Weather proxy-cache server for OpenWeather API"
 

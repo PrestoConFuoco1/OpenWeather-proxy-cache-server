@@ -35,16 +35,15 @@ library
       DerivingJSON
       Exceptions
       Filler
+      Filler.Start
       GenericPretty
       Lib
       Migrations
       OpenWeather
-      Private
       RunOptions
       Server
       Server.Result
-      StartCacheFiller
-      StartServer
+      Server.Start
       Types
       Utils
   other-modules:

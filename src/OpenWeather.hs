@@ -1,21 +1,19 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE TypeOperators #-}
-{-# LANGUAGE DerivingStrategies #-}
-{-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module OpenWeather (
-weatherByLocationData
-, OpenWeatherAPIError(..)
-, SC.ClientError (..)
-, SC.ResponseF(..)
-) where
+module OpenWeather
+    ( weatherByLocationData
+    , OpenWeatherAPIError(..)
+    , SC.ClientError(..)
+    , SC.ResponseF(..)
+    ) where
 
-import qualified GenericPretty as GP
 import Data.Proxy
 import qualified Data.Text as T
+import qualified GenericPretty as GP
 import Network.HTTP.Client (defaultManagerSettings, newManager)
 import Servant.API
 import qualified Servant.Client as SC
@@ -27,15 +25,12 @@ import qualified Control.Monad.Catch as CMC
 
 import qualified Data.Aeson as Ae
 import Data.Aeson ((.:))
-import Text.Read (readMaybe)
 import DerivingJSON
 import GHC.Generics
-
+import Text.Read (readMaybe)
 
 type OpenWeatherAPI
-   = QueryParam "appid" T.Text :> QueryParam "id" Int :> Get '[ JSON] APIResponse
-    :<|> QueryParam "appid" T.Text :> QueryParam "q" T.Text :> Get '[ JSON] APIResponse
-    :<|> QueryParam "appid" T.Text :> QueryParam "lat" Double :> QueryParam "lon" Double :> Get '[ JSON] APIResponse
+     = QueryParam "appid" T.Text :> QueryParam "id" Int :> Get '[ JSON] APIResponse :<|> QueryParam "appid" T.Text :> QueryParam "q" T.Text :> Get '[ JSON] APIResponse :<|> QueryParam "appid" T.Text :> QueryParam "lat" Double :> QueryParam "lon" Double :> Get '[ JSON] APIResponse
 
 api :: Proxy OpenWeatherAPI
 api = Proxy
@@ -52,12 +47,11 @@ baseUrlPort = 80
 baseUrlPath :: String
 baseUrlPath = "data/2.5/weather"
 
-openWeatherBaseUrl = S.BaseUrl baseScheme baseUrlHost baseUrlPort baseUrlPath
+openWeatherBaseUrl =
+    S.BaseUrl baseScheme baseUrlHost baseUrlPort baseUrlPath
 
-weatherByLocationIdClientM
-    :<|> weatherByCityNameClientM
-    :<|> weatherByCoordinatesClientM = SC.client api
-
+weatherByLocationIdClientM :<|> weatherByCityNameClientM :<|> weatherByCoordinatesClientM =
+    SC.client api
 
 toIOThrow :: SC.ClientM a -> IO a
 toIOThrow action = do
@@ -66,39 +60,44 @@ toIOThrow action = do
 
 toIOEither :: SC.ClientM a -> IO (Either SC.ClientError a)
 toIOEither action = do
-  manager <- newManager defaultManagerSettings
-  SC.runClientM action $ SC.mkClientEnv manager openWeatherBaseUrl
+    manager <- newManager defaultManagerSettings
+    SC.runClientM action $ SC.mkClientEnv manager openWeatherBaseUrl
 
 weatherByLocationId :: T.Text -> Int -> IO APIResponse
-weatherByLocationId key cityID = toIOThrow $ weatherByLocationIdClientM (Just key) (Just cityID)
+weatherByLocationId key cityID =
+    toIOThrow $ weatherByLocationIdClientM (Just key) (Just cityID)
 
 weatherByCityName :: T.Text -> T.Text -> IO APIResponse
-weatherByCityName key cityName = toIOThrow $ weatherByCityNameClientM (Just key) (Just cityName)
+weatherByCityName key cityName =
+    toIOThrow $ weatherByCityNameClientM (Just key) (Just cityName)
 
 weatherByCoordinates :: T.Text -> Double -> Double -> IO APIResponse
-weatherByCoordinates key lat lon = toIOThrow $ weatherByCoordinatesClientM (Just key) (Just lat) (Just lon)
+weatherByCoordinates key lat lon =
+    toIOThrow $
+    weatherByCoordinatesClientM (Just key) (Just lat) (Just lon)
 
 weatherByLocationData :: T.Text -> LocationData -> IO APIResponse
-weatherByLocationData key locationData = case locationData of
-    LCityID cityID -> weatherByLocationId key cityID
-    LCityName cityName -> weatherByCityName key cityName
-    LCoords {..} -> weatherByCoordinates key ldLat ldLon
+weatherByLocationData key locationData =
+    case locationData of
+        LCityID cityID -> weatherByLocationId key cityID
+        LCityName cityName -> weatherByCityName key cityName
+        LCoords {..} -> weatherByCoordinates key ldLat ldLon
 
-
-data OpenWeatherAPIError = OpenWeatherAPIError {
-    owapierrorCod :: Int
-    , owapierrorMessage :: T.Text
-    }
-    deriving (Show, Eq, Generic)
-    deriving GP.PrettyShow via PrefixCamel OpenWeatherAPIError
+data OpenWeatherAPIError =
+    OpenWeatherAPIError
+        { owapierrorCod :: Int
+        , owapierrorMessage :: T.Text
+        }
+  deriving (Show, Eq, Generic)
+  deriving GP.PrettyShow via PrefixCamel OpenWeatherAPIError
 
 instance Ae.FromJSON OpenWeatherAPIError where
-    parseJSON = Ae.withObject "open weather API error object" $ \o -> do
-        msg <- o .: "message"
-        codStr <- o .: "cod"
-        let mCod = readMaybe (codStr :: String)
-        cod <- maybe (fail "cod is not a number") pure mCod
-        pure $ OpenWeatherAPIError {
-            owapierrorCod = cod
-            , owapierrorMessage = msg
-            }
+    parseJSON =
+        Ae.withObject "open weather API error object" $ \o -> do
+            msg <- o .: "message"
+            codStr <- o .: "cod"
+            let mCod = readMaybe (codStr :: String)
+            cod <- maybe (fail "cod is not a number") pure mCod
+            pure $
+                OpenWeatherAPIError
+                    {owapierrorCod = cod, owapierrorMessage = msg}

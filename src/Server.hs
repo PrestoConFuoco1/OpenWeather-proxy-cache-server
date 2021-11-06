@@ -1,6 +1,8 @@
 {-# LANGUAGE DerivingVia #-}
 
-module Server where
+module Server
+    ( executeWithErrorHandlers
+    ) where
 
 import qualified App.Logger as L
 import qualified App.ServerHandler as H
@@ -84,29 +86,20 @@ noDataInCache h time cityID = do
     let equals = equalsWithDelta timeEps_
     if time `equals` now
         then do
-            L.logDebug
-                logger
-                "asking openweather api for the current weather"
+            L.logDebug logger "asking openweather api for the current weather"
             data_ <- askOpenWeatherAPI h cityID
             L.logDebug logger "obtained some data"
             L.logDebug logger $ GP.textPretty data_
             pure data_
         else do
-            L.logDebug
-                logger
-                "no data found for the past moment of time"
+            L.logDebug logger "no data found for the past moment of time"
             Ex.throwNoDataFound
 
 askOpenWeatherAPI ::
-       (CMC.MonadCatch m)
-    => H.ServerHandler m
-    -> LocationData
-    -> m APIResponse
+       (CMC.MonadCatch m) => H.ServerHandler m -> LocationData -> m APIResponse
 askOpenWeatherAPI h cityID = do
     let logger = H.log h
-    L.logDebug
-        logger
-        "trying to get weather data from OpenWeather API"
+    L.logDebug logger "trying to get weather data from OpenWeather API"
     currentWeather <- H.requestCurrentWeather h cityID
     H.writeToCache h currentWeather
     pure currentWeather

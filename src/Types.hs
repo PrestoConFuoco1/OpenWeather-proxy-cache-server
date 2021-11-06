@@ -10,10 +10,7 @@ import qualified Data.Aeson as Ae
 import Data.Maybe (fromMaybe, maybeToList)
 import qualified Data.Text as T
 import Database.PostgreSQL.Simple ((:.)(..), Only(..))
-import qualified Database.PostgreSQL.Simple.FromRow as PSF
-    ( FromRow(..)
-    , field
-    )
+import qualified Database.PostgreSQL.Simple.FromRow as PSF (FromRow(..), field)
 import qualified Database.PostgreSQL.Simple.ToRow as PST (ToRow(..))
 import DerivingJSON
 import GHC.Generics
@@ -190,8 +187,7 @@ instance PST.ToRow APIResponse where
 
 apiResponseToRow APIResponse {..} =
     PST.toRow $
-    apiCoord :. Only apiDt :. Only apiBase :. Only apiTimezone :.
-    Only apiId :.
+    apiCoord :. Only apiDt :. Only apiBase :. Only apiTimezone :. Only apiId :.
     Only apiName :.
     maybeAllNothing (U.safeHead apiWeather) :.
     maybeAllNothing apiMain :.

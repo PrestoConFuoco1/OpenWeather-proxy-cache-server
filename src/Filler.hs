@@ -1,4 +1,6 @@
-module Filler where
+module Filler
+    ( fillerFlow
+    ) where
 
 import qualified App.FillerHandler as FH
 import qualified App.Logger as L
@@ -16,10 +18,7 @@ fillerFlow h =
         FH.sleep h
 
 fillerErrorHandler ::
-       (CMC.MonadCatch m)
-    => L.LoggerHandler m
-    -> CMC.SomeException
-    -> m ()
+       (CMC.MonadCatch m) => L.LoggerHandler m -> CMC.SomeException -> m ()
 fillerErrorHandler logger e = do
     L.logError logger "filler: unexpected error occured"
     L.logError logger $ T.pack $ "filler: " <> CMC.displayException e
@@ -31,10 +30,8 @@ fillerLoop h = do
         locationData = FH.envLocationData env
     FH.acquireLock h
     L.logDebug logger $ withNum h "acquired lock"
-    L.logDebug logger $
-        withNum h "trying to get data from OpenWeather API"
-    L.logDebug logger $
-        withNum h $ "city ID = " <> U.showText locationData
+    L.logDebug logger $ withNum h "trying to get data from OpenWeather API"
+    L.logDebug logger $ withNum h $ "city ID = " <> U.showText locationData
     currentWeather <- FH.requestCurrentWeather h locationData
     L.logDebug logger $
         withNum h $
@@ -43,8 +40,7 @@ fillerLoop h = do
     currentTime <- FH.timeSinceEpoch h
     L.logDebug logger $
         withNum h $
-        "writing obtained data into cache for time = " <>
-        U.showText currentTime
+        "writing obtained data into cache for time = " <> U.showText currentTime
     FH.writeToCache h currentWeather
     L.logDebug logger $ withNum h "ok; freeing lock..."
     FH.giveAwayLock h

@@ -48,15 +48,13 @@ fixConfig confDhall =
         { databaseName = dhallDatabaseName confDhall
         , databaseUser = dhallDatabaseUser confDhall
         , databasePassword = dhallDatabasePassword confDhall
-        , fillerCities =
-              Prelude.map fromIntegral $ dhallFillerCities confDhall
+        , fillerCities = Prelude.map fromIntegral $ dhallFillerCities confDhall
         , fillerSleepTimeSeconds =
               fromIntegral $ dhallFillerSleepTimeSeconds confDhall
         , serverDelta =
               Delta
                   { deltaTime =
-                        fromIntegral $
-                        dhallServerTimeEpsSeconds confDhall
+                        fromIntegral $ dhallServerTimeEpsSeconds confDhall
                   , deltaLat = dhallServerLatEps confDhall
                   , deltaLon = dhallServerLonEps confDhall
                   }

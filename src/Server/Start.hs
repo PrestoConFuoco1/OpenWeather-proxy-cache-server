@@ -2,7 +2,10 @@
 {-# LANGUAGE TypeOperators #-}
 {-# LANGUAGE TupleSections #-}
 
-module Server.Start where
+module Server.Start
+    ( startServer
+    , ServerConfig(..)
+    ) where
 
 import qualified App.Logger as L
 import qualified App.ServerHandler as SH
@@ -71,8 +74,7 @@ serverIO ::
     -> Maybe Double
     -> IO Result
 serverIO h mTime mCityID mCityName mLat mLon =
-    liftIO $
-    executeWithErrorHandlers h mTime mCityID mCityName mLat mLon
+    liftIO $ executeWithErrorHandlers h mTime mCityID mCityName mLat mLon
 
 data ServerConfig =
     ServerConfig

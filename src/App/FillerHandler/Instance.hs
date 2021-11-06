@@ -38,8 +38,7 @@ resourcesToHandle conf resources logger env =
         , FH.timeSinceEpoch = U.secondsSinceEpoch
         , FH.requestCurrentWeather =
               OW.weatherByLocationData (configApiKey conf)
-        , FH.writeToCache =
-              D.writeToCache (postgresConnection resources)
+        , FH.writeToCache = D.writeToCache (postgresConnection resources)
         , FH.acquireLock = takeMVar (fillersLock resources)
         , FH.giveAwayLock = putMVar (fillersLock resources) ()
         , FH.sleep = threadDelay (sleepTimeSeconds conf * 1000000)

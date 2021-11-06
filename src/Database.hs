@@ -1,7 +1,10 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Database where
+module Database
+    ( searchCache
+    , writeToCache
+    ) where
 
 import qualified App.Logger as L
 import qualified Data.Text as T
@@ -37,8 +40,7 @@ insertQuery =
     \ ?,   ?, ?,   ?, ?, \
     \ ?, ?, ?, ?, ?, ? ) ON CONFLICT DO NOTHING "
 
-selectQueryByCityID ::
-       Delta -> Integer -> Int -> (PS.Query, [SqlValue])
+selectQueryByCityID :: Delta -> Integer -> Int -> (PS.Query, [SqlValue])
 selectQueryByCityID delta time cityID =
     let qu =
             "SELECT * FROM weather.cache WHERE dt BETWEEN ? AND ? AND city_id = ?"
@@ -48,8 +50,7 @@ selectQueryByCityID delta time cityID =
         pars = [SqlValue minTime, SqlValue maxTime, SqlValue cityID]
      in (qu, pars)
 
-selectQueryByCityName ::
-       Delta -> Integer -> T.Text -> (PS.Query, [SqlValue])
+selectQueryByCityName :: Delta -> Integer -> T.Text -> (PS.Query, [SqlValue])
 selectQueryByCityName delta time cityName =
     let qu =
             "SELECT * FROM weather.cache WHERE dt BETWEEN ? AND ? AND city_name = ?"
@@ -86,10 +87,8 @@ selectQueryByLocationData ::
 selectQueryByLocationData delta time locationData =
     case locationData of
         LCityID cityID -> selectQueryByCityID delta time cityID
-        LCityName cityName ->
-            selectQueryByCityName delta time cityName
-        LCoords {..} ->
-            selectQueryByCoordinates delta time ldLat ldLon
+        LCityName cityName -> selectQueryByCityName delta time cityName
+        LCoords {..} -> selectQueryByCoordinates delta time ldLat ldLon
 
 searchCache ::
        PS.Connection

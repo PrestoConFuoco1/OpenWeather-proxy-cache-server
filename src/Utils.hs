@@ -24,8 +24,7 @@ safeHead (x:_) = Just x
 safeHead _ = Nothing
 
 secondsSinceEpoch :: IO Integer
-secondsSinceEpoch =
-    fromIntegral . Sys.systemSeconds <$> Sys.getSystemTime
+secondsSinceEpoch = fromIntegral . Sys.systemSeconds <$> Sys.getSystemTime
 
 debugTime :: IO Time.UTCTime
 debugTime = Sys.systemToUTCTime <$> Sys.getSystemTime

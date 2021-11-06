@@ -1,4 +1,8 @@
-module App.ServerHandler.Instance where
+module App.ServerHandler.Instance
+    ( Resources(..)
+    , Config(..)
+    , resourcesToHandle
+    ) where
 
 import qualified App.Logger as L
 import App.ServerHandler
@@ -30,7 +34,6 @@ resourcesToHandle conf (Resources con) logger =
         , log = logger
         , timeSinceEpoch = U.secondsSinceEpoch
         , searchCache = D.searchCache con logger
-        , requestCurrentWeather =
-              OW.weatherByLocationData (configApiKey conf)
+        , requestCurrentWeather = OW.weatherByLocationData (configApiKey conf)
         , writeToCache = D.writeToCache con
         }

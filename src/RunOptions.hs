@@ -53,20 +53,14 @@ ghciRunOpts =
 getOpts :: Parser RunOptions
 getOpts =
     RunOptions <$> argument str (metavar "CONFIGPATH") <*>
-    (argument str (metavar "API_KEY_ENV") <|>
-     pure "OPEN_WEATHER_API_KEY") <*>
-    switch
-        (short 'm' <>
-         long "migrations" <> help "Whether to run migrations") <*>
+    (argument str (metavar "API_KEY_ENV") <|> pure "OPEN_WEATHER_API_KEY") <*>
+    switch (short 'm' <> long "migrations" <> help "Whether to run migrations") <*>
     ((getLoggerSettings <$>
-      option
-          auto
-          (short 'l' <> metavar "LOGLEVEL" <> help "Log level")) <|>
+      option auto (short 'l' <> metavar "LOGLEVEL" <> help "Log level")) <|>
      pure LogAll) <*>
     (strOption
          (long "logpathfillers" <>
-          metavar "FILLERSLOGFILE" <>
-          help "Log path for cache fillers") <|>
+          metavar "FILLERSLOGFILE" <> help "Log path for cache fillers") <|>
      pure "./log_fillers") <*>
     (strOption
          (long "logpathserver" <>
@@ -81,8 +75,7 @@ serverHeader = "Weather proxy-cache server for OpenWeather API"
 
 getOptsIO :: IO RunOptions
 getOptsIO =
-    execParser $
-    info (getOpts <**> helper) (fullDesc <> header serverHeader)
+    execParser $ info (getOpts <**> helper) (fullDesc <> header serverHeader)
 
 getLoggerSettings :: L.Priority -> LoggerSettings
 getLoggerSettings = LogGreaterThan

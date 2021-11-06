@@ -52,8 +52,7 @@ runMigrations con =
     PS.withTransaction con $ do
         let defaultContext =
                 MigrationContext
-                    { migrationContextCommand =
-                          MigrationInitialization
+                    { migrationContextCommand = MigrationInitialization
                     , migrationContextVerbose = True
                     , migrationContextConnection = con
                     }
@@ -61,9 +60,7 @@ runMigrations con =
                 ("(init)", defaultContext) :
                 [ ( k
                   , defaultContext
-                        { migrationContextCommand =
-                              MigrationScript k v
-                        })
+                        {migrationContextCommand = MigrationScript k v})
                 | (k, v) <- sortedMigrations
                 ]
         forM_ migrations $ \(_, migr) -> do

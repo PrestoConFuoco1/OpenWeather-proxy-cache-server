@@ -39,10 +39,7 @@ data OptionsL =
 
 defaultOptionsL :: OptionsL
 defaultOptionsL =
-    OptionsL
-        { labelModifier = defaultModif
-        , consModifier = defaultConsModif
-        }
+    OptionsL {labelModifier = defaultModif, consModifier = defaultConsModif}
 
 defaultModif :: String -> String
 defaultModif x@('_':ys) =
@@ -111,12 +108,10 @@ prettyUnit ind (LayoutUnit s val) =
 
 prettyValue :: Int -> LayoutValue -> String
 prettyValue _ (LStr s) = s ++ "\n"
-prettyValue ind (LLay typ ls) =
-    typ ++ "\n" ++ prettyLayout (ind + 1) ls
+prettyValue ind (LLay typ ls) = typ ++ "\n" ++ prettyLayout (ind + 1) ls
 prettyValue ind (LJSON s) =
     ('\n' :) $
-    unlines $
-    map (withIndent $ ind + 1) $ splitToFixedWidthWithIndent ind s
+    unlines $ map (withIndent $ ind + 1) $ splitToFixedWidthWithIndent ind s
 prettyValue _ LEmpty = "empty\n"
 
 prettyLayout :: Int -> Layout -> String
@@ -128,10 +123,7 @@ class PrettyShow a where
     prettyShow = genericPrettyShow defaultOptionsL
 
 genericPrettyShow ::
-       (Generic a, GPrettyShow (Rep a))
-    => OptionsL
-    -> a
-    -> LayoutValue
+       (Generic a, GPrettyShow (Rep a)) => OptionsL -> a -> LayoutValue
 genericPrettyShow opts = gprettyShow opts . from
 
 newtype Showable a =
@@ -187,10 +179,8 @@ instance (PrettyShow a, PrettyShow b) => PrettyShow (Either a b)
 
 instance (PrettyShow a) => PrettyShow [a] where
     prettyShow [] = LEmpty
-    prettyShow xs =
-        LLay "{Array}" $ Layout $ foldr f [] $ zip [0 :: Int ..] xs where
-        f (n, x) acc =
-            LayoutUnit (encloseSq $ show n) (prettyShow x) : acc
+    prettyShow xs = LLay "{Array}" $ Layout $ foldr f [] $ zip [0 :: Int ..] xs where
+        f (n, x) acc = LayoutUnit (encloseSq $ show n) (prettyShow x) : acc
 
 class GPrettyShow f where
     gprettyShow :: OptionsL -> f a -> LayoutValue
@@ -210,24 +200,19 @@ instance (GPrettyShowIgnoreConstr f, GPrettyShowIgnoreConstr g) =>
 
 instance (GPrettyShowIgnoreConstr f, GPrettyShowIgnoreConstr g) =>
          GPrettyShowIgnoreConstr ((:+:) f g) where
-    gprettyShowIgnoreConstr opts (L1 x) =
-        gprettyShowIgnoreConstr opts x
-    gprettyShowIgnoreConstr opts (R1 x) =
-        gprettyShowIgnoreConstr opts x
+    gprettyShowIgnoreConstr opts (L1 x) = gprettyShowIgnoreConstr opts x
+    gprettyShowIgnoreConstr opts (R1 x) = gprettyShowIgnoreConstr opts x
 
 instance (GPrettyShowIgnoreConstr f, Constructor c) =>
          GPrettyShowIgnoreConstr (C1 c f) where
-    gprettyShowIgnoreConstr opts (M1 x) =
-        gprettyShowIgnoreConstr opts x
+    gprettyShowIgnoreConstr opts (M1 x) = gprettyShowIgnoreConstr opts x
 
 instance (GPrettyShow f) => GPrettyShowIgnoreConstr (S1 c f) where
     gprettyShowIgnoreConstr opts (M1 x) = gprettyShow opts x
 
-instance (Constructor c, GPrettyShowAux f) =>
-         GPrettyShow (C1 c f) where
+instance (Constructor c, GPrettyShowAux f) => GPrettyShow (C1 c f) where
     gprettyShow opts m@(M1 x) =
-        LLay (enclose $ consModifier opts $ conName m) $
-        gprettyShowAux opts x
+        LLay (enclose $ consModifier opts $ conName m) $ gprettyShowAux opts x
 
 instance (PrettyShow c) => GPrettyShow (Rec0 c) where
     gprettyShow _ (K1 x) = prettyShow x
@@ -240,7 +225,4 @@ instance (GPrettyShowAux f, GPrettyShowAux g) =>
 instance (Selector s, GPrettyShow f) => GPrettyShowAux (S1 s f) where
     gprettyShowAux opts s@(M1 x) =
         Layout
-            [ LayoutUnit
-                  (labelModifier opts $ selName s)
-                  (gprettyShow opts x)
-            ]
+            [LayoutUnit (labelModifier opts $ selName s) (gprettyShow opts x)]

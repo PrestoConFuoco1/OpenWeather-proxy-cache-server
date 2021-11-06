@@ -47,8 +47,7 @@ baseUrlPort = 80
 baseUrlPath :: String
 baseUrlPath = "data/2.5/weather"
 
-openWeatherBaseUrl =
-    S.BaseUrl baseScheme baseUrlHost baseUrlPort baseUrlPath
+openWeatherBaseUrl = S.BaseUrl baseScheme baseUrlHost baseUrlPort baseUrlPath
 
 weatherByLocationIdClientM :<|> weatherByCityNameClientM :<|> weatherByCoordinatesClientM =
     SC.client api
@@ -73,8 +72,7 @@ weatherByCityName key cityName =
 
 weatherByCoordinates :: T.Text -> Double -> Double -> IO APIResponse
 weatherByCoordinates key lat lon =
-    toIOThrow $
-    weatherByCoordinatesClientM (Just key) (Just lat) (Just lon)
+    toIOThrow $ weatherByCoordinatesClientM (Just key) (Just lat) (Just lon)
 
 weatherByLocationData :: T.Text -> LocationData -> IO APIResponse
 weatherByLocationData key locationData =

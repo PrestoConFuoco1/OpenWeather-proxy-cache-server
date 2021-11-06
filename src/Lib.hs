@@ -5,6 +5,7 @@ module Lib
 import qualified App.Logger as L
 import qualified Config as C
 import Control.Monad (when)
+import qualified Control.Monad.Catch as CMC
 import qualified Data.Text as T
 import qualified Data.Text.Encoding as E
 import qualified Database.PostgreSQL.Simple as PS
@@ -15,24 +16,18 @@ import RunOptions
 import Server.Start (ServerConfig(..), startServer)
 import System.Environment (getEnv)
 import qualified System.Exit as Q
-import qualified Control.Monad.Catch as CMC
 
 connectString :: C.Config -> T.Text
 connectString conf =
     "dbname=" <>
-    databaseName <>
-    " user=" <> userName <> " password='" <> password <> "'"
+    databaseName <> " user=" <> userName <> " password='" <> password <> "'"
   where
     databaseName = C.databaseName conf
     userName = C.databaseUser conf
     password = C.databasePassword conf
 
 toFillersConfig ::
-       T.Text
-    -> C.Config
-    -> PS.Connection
-    -> L.LoggerHandler IO
-    -> FillerConfig
+       T.Text -> C.Config -> PS.Connection -> L.LoggerHandler IO -> FillerConfig
 toFillersConfig apiKey conf con logger =
     FillerConfig
         { fconfCities = C.fillerCities conf
@@ -43,11 +38,7 @@ toFillersConfig apiKey conf con logger =
         }
 
 toServerConfig ::
-       T.Text
-    -> C.Config
-    -> PS.Connection
-    -> L.LoggerHandler IO
-    -> ServerConfig
+       T.Text -> C.Config -> PS.Connection -> L.LoggerHandler IO -> ServerConfig
 toServerConfig apiKey conf con logger =
     ServerConfig
         { sconfApiKey = apiKey
@@ -71,8 +62,7 @@ someFunc = do
     runOpts <- getOptsIO
     L.logDebug loadingLogger "run options are:"
     L.logDebug loadingLogger $ GP.textPretty runOpts
-    apiKey <-
-        fmap T.pack $ getEnv $ T.unpack $ apiConfigEnvVar runOpts
+    apiKey <- fmap T.pack $ getEnv $ T.unpack $ apiConfigEnvVar runOpts
     L.logDebug loadingLogger $ "apiKey = " <> apiKey
     config <- C.loadConfig $ confPath runOpts
     L.logDebug loadingLogger $ GP.textPretty config
@@ -83,8 +73,7 @@ someFunc = do
         else run runOpts apiKey config
 
 withPostgresConnection :: IO PS.Connection -> (PS.Connection -> IO ()) -> IO ()
-withPostgresConnection getCon action =
-    CMC.bracket getCon PS.close action 
+withPostgresConnection getCon action = CMC.bracket getCon PS.close action
 
 run :: RunOptions -> T.Text -> C.Config -> IO ()
 run runOpts apiKey config = do
@@ -92,35 +81,20 @@ run runOpts apiKey config = do
         connectAction = PS.connectPostgreSQL conStr
         withConnection = withPostgresConnection connectAction
     withConnection $ \conFillers ->
-        withConnection $ \conServer ->
-            runWithConnections conFillers conServer
-
+        withConnection $ \conServer -> runWithConnections conFillers conServer
   where
-  runWithConnections conFillers conServer = do
-    let loggerFilter = toLoggerFilter $ loggerSettings runOpts
-        loggerConfigFillers =
-            L.LoggerConfig
-                { L.lcFilter = loggerFilter
-                , L.lcPath = T.unpack $ logPathFillers runOpts
-                }
-        loggerConfigServer =
-            L.LoggerConfig
-                { L.lcFilter = loggerFilter
-                , L.lcPath = T.unpack $ logPathServer runOpts
-                }
-    L.withSelfSufficientLogger loggerConfigFillers $ \loggerFillers ->
-        L.withSelfSufficientLogger loggerConfigServer $ \loggerServer -> do
-            let fillerConfig =
-                    toFillersConfig
-                        apiKey
-                        config
-                        conFillers
-                        loggerFillers
-            startCacheFiller fillerConfig
-            let serverConfig =
-                    toServerConfig
-                        apiKey
-                        config
-                        conServer
-                        loggerServer
-            startServer serverConfig
+    runWithConnections conFillers conServer = do
+        let loggerFilter = toLoggerFilter $ loggerSettings runOpts
+            toLoggerConfig path =
+                L.LoggerConfig
+                    {L.lcFilter = loggerFilter, L.lcPath = T.unpack path}
+            loggerConfigFillers = toLoggerConfig $ logPathFillers runOpts
+            loggerConfigServer = toLoggerConfig $ logPathServer runOpts
+        L.withSelfSufficientLogger loggerConfigFillers $ \loggerFillers ->
+            L.withSelfSufficientLogger loggerConfigServer $ \loggerServer -> do
+                let fillerConfig =
+                        toFillersConfig apiKey config conFillers loggerFillers
+                    serverConfig =
+                        toServerConfig apiKey config conServer loggerServer
+                startCacheFiller fillerConfig
+                startServer serverConfig

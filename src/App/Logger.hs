@@ -96,8 +96,7 @@ initializationErrorHandler e = do
 logIOError :: IOE.IOError -> IO ()
 logIOError err
     | IOE.isAlreadyInUseError err = logError stdHandler lockedmsg
-    | IOE.isPermissionError err =
-        logError stdHandler "not enough permissions"
+    | IOE.isPermissionError err = logError stdHandler "not enough permissions"
     | otherwise =
         logError stdHandler $
         "unexpected IO error: " <> Text.pack (C.displayException err)
@@ -111,16 +110,14 @@ initializeDefaultHandler e = do
     logFatal stdHandler $ Text.pack $ C.displayException e
     Q.exitWith (Q.ExitFailure 1)
 
-withSelfSufficientLogger ::
-       LoggerConfig -> (LoggerHandler IO -> IO a) -> IO a
+withSelfSufficientLogger :: LoggerConfig -> (LoggerHandler IO -> IO a) -> IO a
 withSelfSufficientLogger conf action =
     C.bracket
         (initializeSelfSufficientLoggerResources conf)
         closeSelfSufficientLogger
         (\resourcesRef ->
              action $
-             LoggerHandler $
-             selfSufficientLogger resourcesRef $ lcFilter conf)
+             LoggerHandler $ selfSufficientLogger resourcesRef $ lcFilter conf)
 
 initializeSelfSufficientLoggerResources ::
        LoggerConfig -> IO (IORef LoggerResources)
@@ -155,15 +152,13 @@ selfSufficientLogger resourcesRef predicate pri s = do
     let action = do
             let handle = flHandle resources
             T.hPutStrLn handle (logString pri s)
-            when (handle /= S.stderr) $
-                T.hPutStrLn S.stderr (logString pri s)
+            when (handle /= S.stderr) $ T.hPutStrLn S.stderr (logString pri s)
         errHandler e = do
             resources' <- loggerHandler resources e
             writeIORef resourcesRef resources'
     when (predicate pri) action `C.catch` errHandler
 
-loggerHandler ::
-       LoggerResources -> C.SomeException -> IO LoggerResources
+loggerHandler :: LoggerResources -> C.SomeException -> IO LoggerResources
 loggerHandler resources e = do
     logError stdHandler "failed to use log file, error is:"
     logError stdHandler $ Text.pack $ C.displayException e

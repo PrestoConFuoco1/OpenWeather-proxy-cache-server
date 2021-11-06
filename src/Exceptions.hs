@@ -16,10 +16,7 @@ data ServerException =
   deriving (Show, Eq)
 
 withExceptionHandlers ::
-       (Foldable f, CMC.MonadCatch m)
-    => f (CMC.Handler m a)
-    -> m a
-    -> m a
+       (Foldable f, CMC.MonadCatch m) => f (CMC.Handler m a) -> m a -> m a
 withExceptionHandlers = flip CMC.catches
 
 instance CMC.Exception ServerException
@@ -28,26 +25,20 @@ throwNoDataFound :: (CMC.MonadThrow m) => m a
 throwNoDataFound = CMC.throwM NoDataFound
 
 errorHandlers ::
-       (CMC.MonadCatch m)
-    => L.LoggerHandler m
-    -> [CMC.Handler m Result]
+       (CMC.MonadCatch m) => L.LoggerHandler m -> [CMC.Handler m Result]
 errorHandlers logger =
     [ CMC.Handler serverErrorHandler
     , CMC.Handler $ openWeatherErrorHandler logger
     ]
 
 defaultHandler ::
-       (CMC.MonadCatch m)
-    => L.LoggerHandler m
-    -> CMC.SomeException
-    -> m Result
+       (CMC.MonadCatch m) => L.LoggerHandler m -> CMC.SomeException -> m Result
 defaultHandler logger e = do
     L.logError logger "unexpected error occured"
     L.logError logger $ T.pack $ CMC.displayException e
     pure internalError
 
-serverErrorHandler ::
-       (CMC.MonadCatch m) => ServerException -> m Result
+serverErrorHandler :: (CMC.MonadCatch m) => ServerException -> m Result
 serverErrorHandler NoDataFound = pure noDataFound
 
 {-
@@ -64,16 +55,11 @@ responseHeaders = fromList [("Server","openresty"),("Date","Fri, 05 Nov 2021 12:
 responseHttpVersion = HTTP/1.1, responseBody = "{\"cod\":\"404\",\"message\":\"city not found\"}"})
 -}
 openWeatherErrorHandler ::
-       (CMC.MonadCatch m)
-    => L.LoggerHandler m
-    -> OW.ClientError
-    -> m Result
+       (CMC.MonadCatch m) => L.LoggerHandler m -> OW.ClientError -> m Result
 openWeatherErrorHandler logger err@(OW.FailureResponse _ (OW.Response _ _ _ respBody)) = do
     let maybeParsedBody =
             Ae.decode respBody >>= AeT.parseMaybe Ae.parseJSON :: Maybe OW.OpenWeatherAPIError
-    U.withMaybe
-        maybeParsedBody
-        (failedToParseResponseError logger err) $ \owErr -> do
+    U.withMaybe maybeParsedBody (failedToParseResponseError logger err) $ \owErr -> do
         L.logError logger "got an error from openweather API"
         L.logError logger $ GP.textPretty owErr
         pure $ toAPIError owErr
@@ -83,8 +69,7 @@ openWeatherErrorHandler logger err = do
     pure internalError
 
 toAPIError :: OW.OpenWeatherAPIError -> Result
-toAPIError err =
-    failure (OW.owapierrorCod err) (OW.owapierrorMessage err)
+toAPIError err = failure (OW.owapierrorCod err) (OW.owapierrorMessage err)
 
 failedToParseResponseError ::
        (Monad m) => L.LoggerHandler m -> OW.ClientError -> m Result

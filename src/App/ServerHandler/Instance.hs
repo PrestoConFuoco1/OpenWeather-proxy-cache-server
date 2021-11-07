@@ -13,6 +13,7 @@ import GHC.Generics
 import qualified OpenWeather as OW
 import Prelude hiding (log)
 import qualified Utils as U
+import Types
 
 data Config =
     Config
@@ -32,7 +33,7 @@ resourcesToHandle conf (Resources con) logger =
     ServerHandler
         { handleEnv = configEnv conf
         , log = logger
-        , timeSinceEpoch = U.secondsSinceEpoch
+        , timeSinceEpoch = Seconds <$> U.secondsSinceEpoch
         , searchCache = D.searchCache con logger
         , requestCurrentWeather = OW.weatherByLocationData (configApiKey conf)
         , writeToCache = D.writeToCache con

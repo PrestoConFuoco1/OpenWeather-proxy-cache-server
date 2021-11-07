@@ -23,7 +23,7 @@ safeHead :: [a] -> Maybe a
 safeHead (x:_) = Just x
 safeHead _ = Nothing
 
-secondsSinceEpoch :: IO Integer
+secondsSinceEpoch :: IO Int
 secondsSinceEpoch = fromIntegral . Sys.systemSeconds <$> Sys.getSystemTime
 
 debugTime :: IO Time.UTCTime

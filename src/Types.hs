@@ -3,6 +3,7 @@
 {-# LANGUAGE DeriveAnyClass #-}
 {-# LANGUAGE DerivingVia #-}
 {-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Types where
 
@@ -10,6 +11,8 @@ import qualified Data.Aeson as Ae
 import Data.Maybe (fromMaybe, maybeToList)
 import qualified Data.Text as T
 import Database.PostgreSQL.Simple ((:.)(..), Only(..))
+import qualified Database.PostgreSQL.Simple.ToField as PSFi (ToField(..))
+import qualified Database.PostgreSQL.Simple.FromField as PSFi (FromField(..))
 import qualified Database.PostgreSQL.Simple.FromRow as PSF (FromRow(..), field)
 import qualified Database.PostgreSQL.Simple.ToRow as PST (ToRow(..))
 import DerivingJSON
@@ -27,6 +30,11 @@ allNothingMaybe :: (Eq a, HasNothing a) => a -> Maybe a
 allNothingMaybe x
     | x == allNothing = Nothing
     | otherwise = Just x
+
+
+newtype Seconds = Seconds Int
+    deriving (Generic)
+    deriving (Eq, Ord, Enum, Num, Show, Real, Integral, Ae.ToJSON, Ae.FromJSON, PSFi.ToField, PSFi.FromField, GP.PrettyShow) via Int
 
 -- all fields ok
 data Coordinates =
@@ -165,7 +173,8 @@ instance HasNothing Sys where
 data APIResponse =
     APIResponse
         { apiCoord :: Coordinates -- main field
-        , apiDt :: Integer -- main field
+        --, apiDt :: Integer -- main field
+        , apiDt :: Seconds -- main field
         , apiBase :: Maybe T.Text
         , apiTimezone :: Int
         , apiId :: Int
@@ -241,7 +250,7 @@ data LocationData
 
 data Delta =
     Delta
-        { deltaTime :: Integer
+        { deltaTime :: Seconds
         , deltaLat :: Double
         , deltaLon :: Double
         }

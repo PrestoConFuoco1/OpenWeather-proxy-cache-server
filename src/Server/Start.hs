@@ -25,7 +25,7 @@ import Server.Result
 import Types
 
 type CacheAPI
-     = "weather" :> S.QueryParam "time" Integer :> S.QueryParam "city_id" Int :> S.QueryParam "city_name" T.Text :> S.QueryParam "lat" Double :> S.QueryParam "lon" Double :> S.Get '[ S.JSON] Result
+     = "weather" :> S.QueryParam "time" Int :> S.QueryParam "city_id" Int :> S.QueryParam "city_name" T.Text :> S.QueryParam "lat" Double :> S.QueryParam "lon" Double :> S.Get '[ S.JSON] Result
 
 api :: Proxy CacheAPI
 api = Proxy
@@ -44,7 +44,7 @@ server config logger resourcesRef =
                 Ex.withExceptionHandlers
                     (resourcesErrorHandlers logger resources) $
                 (, resources) <$>
-                serverIO handle mTime mCityID mCityName mLat mLon
+                serverIO handle (Seconds <$> mTime) mCityID mCityName mLat mLon
             writeIORef resourcesRef resources'
             pure res
 
@@ -67,7 +67,7 @@ resourcesErrorHandlers logger resources =
 
 serverIO ::
        SH.ServerHandler IO
-    -> Maybe Integer
+    -> Maybe Seconds
     -> Maybe Int
     -> Maybe T.Text
     -> Maybe Double

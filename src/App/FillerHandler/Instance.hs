@@ -11,6 +11,7 @@ import GHC.Generics
 import qualified OpenWeather as OW
 import Prelude hiding (log)
 import qualified Utils as U
+import Types
 
 data Config =
     Config
@@ -35,7 +36,7 @@ resourcesToHandle conf resources logger env =
     FH.FillerHandler
         { FH.log = logger
         , FH.handlerEnv = env
-        , FH.timeSinceEpoch = U.secondsSinceEpoch
+        , FH.timeSinceEpoch = Seconds <$> U.secondsSinceEpoch
         , FH.requestCurrentWeather =
               OW.weatherByLocationData (configApiKey conf)
         , FH.writeToCache = D.writeToCache (postgresConnection resources)

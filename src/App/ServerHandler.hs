@@ -18,8 +18,8 @@ data ServerHandler m =
     ServerHandler
         { handleEnv :: Environment
         , log :: L.LoggerHandler m
-        , timeSinceEpoch :: m Integer
-        , searchCache :: Delta -> Integer -> LocationData -> m [APIResponse]
+        , timeSinceEpoch :: m Seconds
+        , searchCache :: Delta -> Seconds -> LocationData -> m [APIResponse]
         , requestCurrentWeather :: LocationData -> m APIResponse
         , writeToCache :: APIResponse -> m ()
         }

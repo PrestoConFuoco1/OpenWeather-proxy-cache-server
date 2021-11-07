@@ -31,7 +31,7 @@ getLocationData _ _ _ _ = Nothing
 executeWithErrorHandlers ::
        (CMC.MonadCatch m)
     => H.ServerHandler m
-    -> Maybe Integer
+    -> Maybe Seconds
     -> Maybe Int
     -> Maybe T.Text
     -> Maybe Double
@@ -47,7 +47,7 @@ executeWithErrorHandlers h mTime mCityID mCityName mLat mLon =
 execute ::
        (CMC.MonadCatch m)
     => H.ServerHandler m
-    -> Maybe Integer
+    -> Maybe Seconds
     -> LocationData
     -> m APIResponse
 execute h mTime cityID = do
@@ -71,7 +71,7 @@ equalsWithDelta delta x y = abs (x - y) <= delta
 noDataInCache ::
        (CMC.MonadCatch m)
     => H.ServerHandler m
-    -> Integer
+    -> Seconds
     -> LocationData
     -> m APIResponse
 noDataInCache h time cityID = do

@@ -40,7 +40,7 @@ insertQuery =
     \ ?,   ?, ?,   ?, ?, \
     \ ?, ?, ?, ?, ?, ? ) ON CONFLICT DO NOTHING "
 
-selectQueryByCityID :: Delta -> Integer -> Int -> (PS.Query, [SqlValue])
+selectQueryByCityID :: Delta -> Seconds -> Int -> (PS.Query, [SqlValue])
 selectQueryByCityID delta time cityID =
     let qu =
             "SELECT * FROM weather.cache WHERE dt BETWEEN ? AND ? AND city_id = ?"
@@ -50,7 +50,7 @@ selectQueryByCityID delta time cityID =
         pars = [SqlValue minTime, SqlValue maxTime, SqlValue cityID]
      in (qu, pars)
 
-selectQueryByCityName :: Delta -> Integer -> T.Text -> (PS.Query, [SqlValue])
+selectQueryByCityName :: Delta -> Seconds -> T.Text -> (PS.Query, [SqlValue])
 selectQueryByCityName delta time cityName =
     let qu =
             "SELECT * FROM weather.cache WHERE dt BETWEEN ? AND ? AND city_name = ?"
@@ -60,7 +60,7 @@ selectQueryByCityName delta time cityName =
      in (qu, pars)
 
 selectQueryByCoordinates ::
-       Delta -> Integer -> Double -> Double -> (PS.Query, [SqlValue])
+       Delta -> Seconds -> Double -> Double -> (PS.Query, [SqlValue])
 selectQueryByCoordinates delta time lat lon =
     let qu =
             "SELECT * FROM weather.cache WHERE dt BETWEEN ? AND ? \
@@ -83,7 +83,7 @@ selectQueryByCoordinates delta time lat lon =
      in (qu, pars)
 
 selectQueryByLocationData ::
-       Delta -> Integer -> LocationData -> (PS.Query, [SqlValue])
+       Delta -> Seconds -> LocationData -> (PS.Query, [SqlValue])
 selectQueryByLocationData delta time locationData =
     case locationData of
         LCityID cityID -> selectQueryByCityID delta time cityID
@@ -94,7 +94,7 @@ searchCache ::
        PS.Connection
     -> L.LoggerHandler IO
     -> Delta
-    -> Integer
+    -> Seconds
     -> LocationData
     -> IO [APIResponse]
 searchCache con logger delta time locationData = do

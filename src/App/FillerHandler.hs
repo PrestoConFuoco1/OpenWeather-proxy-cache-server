@@ -15,7 +15,7 @@ data FillerHandler m =
     FillerHandler
         { log :: L.LoggerHandler m
         , handlerEnv :: Environment
-        , timeSinceEpoch :: m Integer
+        , timeSinceEpoch :: m Seconds
         , requestCurrentWeather :: LocationData -> m APIResponse
         , writeToCache :: APIResponse -> m ()
         , acquireLock :: m ()

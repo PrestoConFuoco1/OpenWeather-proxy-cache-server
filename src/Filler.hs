@@ -14,7 +14,8 @@ fillerFlow :: (CMC.MonadCatch m) => FH.FillerHandler m -> m ()
 fillerFlow h =
     forever $ do
         let logger = FH.log h
-        CMC.handle (fillerErrorHandler logger) (fillerLoop h)
+        FH.withLock h $
+            CMC.handle (fillerErrorHandler logger) (fillerLoop h)
         FH.sleep h
 
 fillerErrorHandler ::
@@ -28,7 +29,6 @@ fillerLoop h = do
     let logger = FH.log h
         env = FH.handlerEnv h
         locationData = FH.envLocationData env
-    FH.acquireLock h
     L.logDebug logger $ withNum h "acquired lock"
     L.logDebug logger $ withNum h "trying to get data from OpenWeather API"
     L.logDebug logger $ withNum h $ "city ID = " <> U.showText locationData
@@ -43,7 +43,6 @@ fillerLoop h = do
         "writing obtained data into cache for time = " <> U.showText currentTime
     FH.writeToCache h currentWeather
     L.logDebug logger $ withNum h "ok; freeing lock..."
-    FH.giveAwayLock h
 
 withNum :: FH.FillerHandler m -> T.Text -> T.Text
 withNum h text =

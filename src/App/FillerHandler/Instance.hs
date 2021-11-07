@@ -12,6 +12,7 @@ import qualified OpenWeather as OW
 import Prelude hiding (log)
 import Types
 import qualified Utils as U
+import qualified Control.Monad.Catch as CMC
 
 data Config =
     Config
@@ -33,14 +34,17 @@ resourcesToHandle ::
     -> FH.Environment
     -> FH.FillerHandler IO
 resourcesToHandle conf resources logger env =
-    FH.FillerHandler
+    let
+        acquireLock = takeMVar (fillersLock resources)
+        giveAwayLock = \_ -> putMVar (fillersLock resources) ()
+
+     in FH.FillerHandler
         { FH.log = logger
         , FH.handlerEnv = env
         , FH.timeSinceEpoch = Seconds <$> U.secondsSinceEpoch
         , FH.requestCurrentWeather =
               OW.weatherByLocationData (configApiKey conf)
         , FH.writeToCache = D.writeToCache (postgresConnection resources)
-        , FH.acquireLock = takeMVar (fillersLock resources)
-        , FH.giveAwayLock = putMVar (fillersLock resources) ()
+        , FH.withLock = \a -> CMC.bracket acquireLock giveAwayLock (\_ -> a)
         , FH.sleep = threadDelay (sleepTimeSeconds conf * 1000000)
         }

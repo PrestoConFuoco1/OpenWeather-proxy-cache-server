@@ -1,3 +1,5 @@
+{-# LANGUAGE RankNTypes #-}
+
 module App.FillerHandler where
 
 import qualified App.Logger as L
@@ -18,7 +20,6 @@ data FillerHandler m =
         , timeSinceEpoch :: m Seconds
         , requestCurrentWeather :: LocationData -> m APIResponse
         , writeToCache :: APIResponse -> m ()
-        , acquireLock :: m ()
-        , giveAwayLock :: m ()
+        , withLock :: forall a. m a -> m a
         , sleep :: m ()
         }

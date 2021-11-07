@@ -55,8 +55,8 @@ fixConfig confDhall =
               Delta
                   { deltaTime =
                         fromIntegral $ dhallServerTimeEpsSeconds confDhall
-                  , deltaLat = dhallServerLatEps confDhall
-                  , deltaLon = dhallServerLonEps confDhall
+                  , deltaLat = Latitude $ dhallServerLatEps confDhall
+                  , deltaLon = Longitude $ dhallServerLonEps confDhall
                   }
         , serverPort = fromIntegral $ dhallServerPort confDhall
         }

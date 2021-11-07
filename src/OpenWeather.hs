@@ -70,16 +70,20 @@ weatherByCityName :: T.Text -> T.Text -> IO APIResponse
 weatherByCityName key cityName =
     toIOThrow $ weatherByCityNameClientM (Just key) (Just cityName)
 
-weatherByCoordinates :: T.Text -> Double -> Double -> IO APIResponse
-weatherByCoordinates key lat lon =
-    toIOThrow $ weatherByCoordinatesClientM (Just key) (Just lat) (Just lon)
+weatherByCoordinates :: T.Text -> Coordinates -> IO APIResponse
+weatherByCoordinates key Coordinates {..} =
+    toIOThrow $
+    weatherByCoordinatesClientM
+        (Just key)
+        (Just $ unLatitude coordLat)
+        (Just $ unLongitude coordLon)
 
 weatherByLocationData :: T.Text -> LocationData -> IO APIResponse
 weatherByLocationData key locationData =
     case locationData of
         LCityID cityID -> weatherByLocationId key cityID
         LCityName cityName -> weatherByCityName key cityName
-        LCoords {..} -> weatherByCoordinates key ldLat ldLon
+        LCoords coords -> weatherByCoordinates key coords
 
 data OpenWeatherAPIError =
     OpenWeatherAPIError

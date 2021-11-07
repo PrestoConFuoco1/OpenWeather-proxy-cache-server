@@ -44,7 +44,13 @@ server config logger resourcesRef =
                 Ex.withExceptionHandlers
                     (resourcesErrorHandlers logger resources) $
                 (, resources) <$>
-                serverIO handle (Seconds <$> mTime) mCityID mCityName mLat mLon
+                serverIO
+                    handle
+                    (Seconds <$> mTime)
+                    mCityID
+                    mCityName
+                    (Latitude <$> mLat)
+                    (Longitude <$> mLon)
             writeIORef resourcesRef resources'
             pure res
 
@@ -70,8 +76,8 @@ serverIO ::
     -> Maybe Seconds
     -> Maybe Int
     -> Maybe T.Text
-    -> Maybe Double
-    -> Maybe Double
+    -> Maybe Latitude
+    -> Maybe Longitude
     -> IO Result
 serverIO h mTime mCityID mCityName mLat mLon =
     liftIO $ executeWithErrorHandlers h mTime mCityID mCityName mLat mLon

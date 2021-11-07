@@ -12,8 +12,8 @@ import qualified Database.PostgreSQL.Simple as PS
 import GHC.Generics
 import qualified OpenWeather as OW
 import Prelude hiding (log)
-import qualified Utils as U
 import Types
+import qualified Utils as U
 
 data Config =
     Config

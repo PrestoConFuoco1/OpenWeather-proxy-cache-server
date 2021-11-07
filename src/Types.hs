@@ -11,9 +11,9 @@ import qualified Data.Aeson as Ae
 import Data.Maybe (fromMaybe, maybeToList)
 import qualified Data.Text as T
 import Database.PostgreSQL.Simple ((:.)(..), Only(..))
-import qualified Database.PostgreSQL.Simple.ToField as PSFi (ToField(..))
 import qualified Database.PostgreSQL.Simple.FromField as PSFi (FromField(..))
 import qualified Database.PostgreSQL.Simple.FromRow as PSF (FromRow(..), field)
+import qualified Database.PostgreSQL.Simple.ToField as PSFi (ToField(..))
 import qualified Database.PostgreSQL.Simple.ToRow as PST (ToRow(..))
 import DerivingJSON
 import GHC.Generics
@@ -31,16 +31,32 @@ allNothingMaybe x
     | x == allNothing = Nothing
     | otherwise = Just x
 
+newtype Seconds =
+    Seconds
+        { unSeconds :: Int
+        }
+  deriving (Eq, Ord, Enum, Num, Show, Real, Integral) via Int
 
-newtype Seconds = Seconds Int
-    deriving (Generic)
-    deriving (Eq, Ord, Enum, Num, Show, Real, Integral, Ae.ToJSON, Ae.FromJSON, PSFi.ToField, PSFi.FromField, GP.PrettyShow) via Int
+    deriving(Ae.ToJSON, Ae.FromJSON, PSFi.ToField, PSFi.FromField, GP.PrettyShow) via Int
+newtype Latitude =
+    Latitude
+        { unLatitude :: Double
+        }
+  deriving (Eq, Ord, Enum, Floating, Fractional, Num, Real, RealFloat, RealFrac, Show) via Double
+  deriving (Ae.ToJSON, Ae.FromJSON, PSFi.ToField, PSFi.FromField, GP.PrettyShow) via Double
+
+newtype Longitude =
+    Longitude
+        { unLongitude :: Double
+        }
+  deriving (Eq, Ord, Enum, Floating, Fractional, Num, Real, RealFloat, RealFrac, Show) via Double
+  deriving (Ae.ToJSON, Ae.FromJSON, PSFi.ToField, PSFi.FromField, GP.PrettyShow) via Double
 
 -- all fields ok
 data Coordinates =
     Coordinates
-        { coordLon :: Double
-        , coordLat :: Double
+        { coordLon :: Longitude
+        , coordLat :: Latitude
         }
   deriving (Show, Eq, Generic)
   deriving anyclass (PST.ToRow, PSF.FromRow)
@@ -242,18 +258,15 @@ data LocationData
     | LCityName
           { unLCityName :: T.Text
           }
-    | LCoords
-          { ldLat :: Double
-          , ldLon :: Double
-          }
+    | LCoords Coordinates
   deriving (Show, Eq, Generic)
 
+--          { ldLat :: Double
+--          , ldLon :: Double
+--          }
 data Delta =
     Delta
         { deltaTime :: Seconds
-        , deltaLat :: Double
-        , deltaLon :: Double
-        }
-  deriving (Show, Eq, Generic)
-  deriving GP.PrettyShow via PrefixCamel Delta
-
+        , deltaLat :: Latitude
+        , deltaLon :: Longitude
+        }  deriving (Show, Eq, Generic)  deriving GP.PrettyShow via PrefixCamel Delta

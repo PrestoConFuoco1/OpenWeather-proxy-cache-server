@@ -19,13 +19,13 @@ import qualified Utils as U
 getLocationData ::
        Maybe Int
     -> Maybe T.Text
-    -> Maybe Double
-    -> Maybe Double
+    -> Maybe Latitude
+    -> Maybe Longitude
     -> Maybe LocationData
 getLocationData (Just cityID) _ _ _ = Just $ LCityID cityID
 getLocationData _ (Just cityName) _ _ = Just $ LCityName cityName
 getLocationData _ _ (Just lat) (Just lon) =
-    Just $ LCoords {ldLat = lat, ldLon = lon}
+    Just $ LCoords $ Coordinates {coordLat = lat, coordLon = lon}
 getLocationData _ _ _ _ = Nothing
 
 executeWithErrorHandlers ::
@@ -34,8 +34,8 @@ executeWithErrorHandlers ::
     -> Maybe Seconds
     -> Maybe Int
     -> Maybe T.Text
-    -> Maybe Double
-    -> Maybe Double
+    -> Maybe Latitude
+    -> Maybe Longitude
     -> m Result
 executeWithErrorHandlers h mTime mCityID mCityName mLat mLon =
     let mLocationData = getLocationData mCityID mCityName mLat mLon

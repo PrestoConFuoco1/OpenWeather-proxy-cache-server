@@ -60,14 +60,16 @@ selectQueryByCityName delta time cityName =
      in (qu, pars)
 
 selectQueryByCoordinates ::
-       Delta -> Seconds -> Double -> Double -> (PS.Query, [SqlValue])
-selectQueryByCoordinates delta time lat lon =
+       Delta -> Seconds -> Coordinates -> (PS.Query, [SqlValue])
+selectQueryByCoordinates delta time coords =
     let qu =
             "SELECT * FROM weather.cache WHERE dt BETWEEN ? AND ? \
              \ AND coord_latitude BETWEEN ? AND ? \
              \ AND coord_longitude BETWEEN ? AND ? "
         timeEps = deltaTime delta
         (minTime, maxTime) = (time - timeEps, time + timeEps)
+        lat = coordLat coords
+        lon = coordLon coords
         latEps = deltaLat delta
         (minLat, maxLat) = (lat - latEps, lat + latEps)
         lonEps = deltaLon delta
@@ -88,7 +90,7 @@ selectQueryByLocationData delta time locationData =
     case locationData of
         LCityID cityID -> selectQueryByCityID delta time cityID
         LCityName cityName -> selectQueryByCityName delta time cityName
-        LCoords {..} -> selectQueryByCoordinates delta time ldLat ldLon
+        LCoords coords -> selectQueryByCoordinates delta time coords
 
 searchCache ::
        PS.Connection

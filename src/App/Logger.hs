@@ -24,7 +24,8 @@ import Prelude hiding (log)
 import qualified System.Exit as Q (ExitCode(..), exitWith)
 import qualified System.IO as S
 import qualified System.IO.Error as IOE
-import qualified Utils as S (showText)
+import qualified Utils as U
+import qualified Data.Time as Time
 
 newtype LoggerHandler m =
     LoggerHandler
@@ -54,7 +55,12 @@ logError = (`log` Error)
 logFatal = (`log` Fatal)
 
 logString :: Priority -> Text.Text -> Text.Text
-logString pri s = "[" <> S.showText pri <> "]: " <> s
+logString pri s = mconcat [" [" , U.showText pri , "]: " , s]
+
+logStringWithTimestamp :: Time.UTCTime -> Priority -> Text.Text -> Text.Text
+logStringWithTimestamp time pri s =
+ --   "[" <> U.showText pri <> "]: " <> U.showText time <> " | " <> s
+    U.showUTCTimeText time <> logString pri s
 
 stdHandler :: LoggerHandler IO
 stdHandler = stdCondHandler $ const True
@@ -149,10 +155,12 @@ selfSufficientLogger ::
     -> IO ()
 selfSufficientLogger resourcesRef predicate pri s = do
     resources <- readIORef resourcesRef
+    time <- U.utcTime
     let action = do
             let handle = flHandle resources
-            T.hPutStrLn handle (logString pri s)
-            when (handle /= S.stderr) $ T.hPutStrLn S.stderr (logString pri s)
+                logStr = logStringWithTimestamp time pri s
+            T.hPutStrLn handle logStr
+            when (handle /= S.stderr) $ T.hPutStrLn S.stderr logStr
         errHandler e = do
             resources' <- loggerHandler resources e
             writeIORef resourcesRef resources'

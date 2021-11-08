@@ -19,6 +19,18 @@ showDay = Time.formatTime Time.defaultTimeLocale "%F"
 readDay :: String -> Maybe Time.Day
 readDay = Time.parseTimeM True Time.defaultTimeLocale "%Y-%-m-%-d"
 
+showUTCTime :: Time.UTCTime -> String
+showUTCTime = Time.formatTime Time.defaultTimeLocale "%F %T.%4q UTC"
+
+showUTCTimeText = Text.pack . showUTCTime
+
+{-
+showUTCTime2 = Time.formatTime Time.defaultTimeLocale "%F %T.%q"
+
+debug :: Time.UTCTime -> (String, String)
+debug time = (showUTCTime time, showUTCTime2 time)
+-}
+
 safeHead :: [a] -> Maybe a
 safeHead (x:_) = Just x
 safeHead _ = Nothing
@@ -26,5 +38,5 @@ safeHead _ = Nothing
 secondsSinceEpoch :: IO Int
 secondsSinceEpoch = fromIntegral . Sys.systemSeconds <$> Sys.getSystemTime
 
-debugTime :: IO Time.UTCTime
-debugTime = Sys.systemToUTCTime <$> Sys.getSystemTime
+utcTime :: IO Time.UTCTime
+utcTime = Sys.systemToUTCTime <$> Sys.getSystemTime
